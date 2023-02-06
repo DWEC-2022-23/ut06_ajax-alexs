@@ -1,12 +1,28 @@
-const request = new Request('http://127.0.0.1:5500/novios.json');
+document.addEventListener('DOMContentLoaded', () => {
+  fetch('http://localhost:3000/invitados')
+    .then((response) => response.json())
+    .then((data) => paint(data));
+})
 
-fetch(request)
-  .then((response) => {
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+function paint(data) {
+  data.forEach(invitado => {
+    const guest = createGuest(invitado.nombre);
+
+    if (invitado.confirmado) {
+      guest.querySelector("input[type='checkbox']").checked = true;
+      guest.className = 'responded';
     }
-    return response;
-  })
-  .then((response) => {
-    document.getElementById('test').innerHTML = response;
+
+    guest.id = invitado.id;
+    guestList.appendChild(guest);
   });
+}
+
+// TODO
+// ! not working
+function insert(guest) {
+  fetch('http://localhost:3000/invitados', {
+    method: 'PUT',
+    body: JSON.stringify(guest)
+  })
+}

@@ -171,7 +171,7 @@ div > label {
   .wrapper {
     margin: 0;
   }
-  .main {
+  main {
     padding: 2em 1em .75em;
   }
 }
@@ -182,7 +182,7 @@ div > label {
     padding: 2.5em 1em 1em;  
     background-position: 0 -95px; 
   }
-  .main > div {
+  main > div {
     float: right;
     display: inline-block;
     margin-top: 12px;
@@ -207,7 +207,7 @@ div > label {
   .wrapper {
     width: 90%;
   }
-  .main {
+  main {
     padding: 3.8em 1.5em .75em;
     position: relative;
     z-index: 10;
