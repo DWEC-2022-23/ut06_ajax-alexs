@@ -33,9 +33,13 @@ document.addEventListener('DOMContentLoaded', () => {
   guestList.addEventListener('change', (e) => {
     const hasResponded = e.target.checked;
     const guest = e.target.parentNode.parentNode;
+    const guestName = guest.getElementsByTagName('span')[0].innerText;
 
     if (hasResponded) guest.className = 'responded';
     else guest.className = '';
+
+    // new Fetch().edit(new Guest(guest.id, guestName, hasResponded));
+    new XMLHttp().edit(new Guest(guest.id, guestName, hasResponded));
   });
 
   // TODO refactor
@@ -47,6 +51,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const action = button.textContent;
       const nameActions = {
         remove: () => {
+          // new Fetch().remove(guest.id);
+          new XMLHttp().remove(guest.id);
           guestList.removeChild(guest);
         },
         edit: () => {
@@ -65,10 +71,11 @@ document.addEventListener('DOMContentLoaded', () => {
           guest.insertBefore(span, input);
           guest.removeChild(input);
           button.textContent = 'edit';
+          // new Fetch().edit(new Guest(guest.id, input.value));
+          new XMLHttp().edit(new Guest(guest.id, input.value));
         }
       };
 
-      // select and run action in button's name
       nameActions[action]();
     }
   });
@@ -82,6 +89,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const guest = createGuest(guestName);
     guestList.appendChild(guest);
     input.value = '';
+
+    //new Fetch().insert(new Guest(0, guestName, false));
+    new XMLHttp().insert(new Guest(0, guestName, false));
   });
 
 }); // END DOMContentLoaded

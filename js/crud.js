@@ -18,11 +18,54 @@ function paint(data) {
   });
 }
 
-// TODO
-// ! not working
-function insert(guest) {
-  fetch('http://localhost:3000/invitados', {
-    method: 'PUT',
-    body: JSON.stringify(guest)
-  })
+function Fetch() { }
+Fetch.prototype = {
+  insert: function (guest) {
+    fetch('http://localhost:3000/invitados', {
+      headers: { 'Content-Type': 'application/json' },
+      method: 'POST',
+      body: JSON.stringify(guest)
+    })
+  },
+  remove: function (guestID) {
+    fetch('http://localhost:3000/invitados/' + guestID, {
+      method: 'DELETE',
+    })
+  },
+  edit: function (guest) {
+    fetch('http://localhost:3000/invitados/' + guest.id, {
+      headers: { 'Content-Type': 'application/json' },
+      method: 'PATCH',
+      body: JSON.stringify(guest)
+    })
+  },
 }
+
+function XMLHttp() { }
+XMLHttp.prototype = {
+  insert: function (guest) {
+    const request = new XMLHttpRequest();
+    request.open("POST", "http://localhost:3000/invitados");
+    request.setRequestHeader('Content-Type', 'application/json');
+    request.send(JSON.stringify(guest));
+  },
+  remove: function (guestID) {
+    const request = new XMLHttpRequest();
+    request.open("DELETE", "http://localhost:3000/invitados/" + guestID);
+    request.send();
+  },
+  edit: function (guest) {
+    const request = new XMLHttpRequest();
+    request.open("PATCH", 'http://localhost:3000/invitados/' + guest.id);
+    request.setRequestHeader('Content-Type', 'application/json');
+    request.send(JSON.stringify(guest));
+  }
+}
+
+function Guest(id, name, checked) {
+  this.id = id;
+  this.nombre = name;
+  this.confirmado = checked;
+}
+
+Guest.prototype = {}
