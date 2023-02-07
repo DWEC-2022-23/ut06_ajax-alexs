@@ -13,7 +13,7 @@
     {
       "id": 3,
       "nombre": "Pedro Rodriguez",
-      "confirmado": false
+      "confirmado": true
     },
     {
       "id": 4,
@@ -32,7 +32,12 @@
     },
     {
       "id": 7,
-      "nombre": "Ramón",
+      "nombre": "Ramón y Cajal",
+      "confirmado": true
+    },
+    {
+      "id": 8,
+      "nombre": "Test",
       "confirmado": false
     }
   ]

@@ -38,7 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (hasResponded) guest.className = 'responded';
     else guest.className = '';
 
-    // new Fetch().edit(new Guest(guest.id, guestName, hasResponded));
     new XMLHttp().edit(new Guest(guest.id, guestName, hasResponded));
   });
 
@@ -51,14 +50,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const action = button.textContent;
       const nameActions = {
         remove: () => {
-          // new Fetch().remove(guest.id);
           new XMLHttp().remove(guest.id);
           guestList.removeChild(guest);
         },
         edit: () => {
           const span = guest.firstElementChild;
           const input = document.createElement('input');
-          input.type = 'text';
+          input.type = 'name';
           input.value = span.textContent;
           guest.insertBefore(input, span);
           guest.removeChild(span);
@@ -71,7 +69,6 @@ document.addEventListener('DOMContentLoaded', () => {
           guest.insertBefore(span, input);
           guest.removeChild(input);
           button.textContent = 'edit';
-          // new Fetch().edit(new Guest(guest.id, input.value));
           new XMLHttp().edit(new Guest(guest.id, input.value));
         }
       };
@@ -80,23 +77,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  guestForm.addEventListener('submit', (e) => {
+  guestForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const guestName = input.value;
     if (guestName === "") return;
 
-    const guest = createGuest(guestName);
-    guestList.appendChild(guest);
-    input.value = '';
-
-    //new Fetch().insert(new Guest(0, guestName, false));
+    // Otra opción es crear un objeto Guest con un método insert
+    // dentro de él y que auto actualice su id al insertarse.
     new XMLHttp().insert(new Guest(0, guestName, false));
+
+    const guest = createGuest(guestName);
+    const savedGuest = await new XMLHttp().search('nombre=' + guestName);
+    guestList.appendChild(guest);
+    guest.id = savedGuest[0].id;
+    input.value = '';
   });
 
+  (async function () {
+    try {
+      let data = await new XMLHttp().search();
+      console.log(data)
+      paint(data);
+    }
+    catch (error) {
+      let errorWarning = document.createElement('h2');
+      errorWarning.innerText = error;
+      mainContent.appendChild(errorWarning);
+    }
+  })()
 }); // END DOMContentLoaded
 
-function createGuest(text) {
+function createGuest(name) {
   function createElement(elementName, property, value) {
     const element = document.createElement(elementName);
     element[property] = value;
@@ -110,10 +122,24 @@ function createGuest(text) {
   }
 
   const li = document.createElement('li');
-  appendToLI('span', 'textContent', text);
+  appendToLI('span', 'textContent', name);
   appendToLI('label', 'textContent', 'Confirmed')
     .appendChild(createElement('input', 'type', 'checkbox'));
   appendToLI('button', 'textContent', 'edit');
   appendToLI('button', 'textContent', 'remove');
   return li;
+}
+
+function paint(data) {
+  data.forEach(invitado => {
+    const guest = createGuest(invitado.nombre);
+
+    guest.id = invitado.id;
+    if (invitado.confirmado) {
+      guest.querySelector("input[type='checkbox']").checked = true;
+      guest.className = 'responded';
+    }
+
+    guestList.appendChild(guest);
+  });
 }
