@@ -1,0 +1,14 @@
+{
+  "name": "json",
+  "version": "1.0.0",
+  "description": "Base de datos de la práctica de Ajax.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Alejandro Pérez",
+  "license": "ISC",
+  "dependencies": {
+    "json-server": "^0.17.1"
+  }
+}

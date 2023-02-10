@@ -1,121 +1,145 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const form = document.getElementById('registrar');
-  const input = form.querySelector('input');
-  
-  const mainDiv = document.querySelector('.main');
-  const ul = document.getElementById('invitedList');
-  
-  const div = document.createElement('div');
+  const guestForm = document.getElementById('registrar');
+  const input = guestForm.querySelector('input');
+
+  const mainContent = document.querySelector('main');
+  const guestList = document.getElementById('guestList');
+
+  const filter = document.createElement('div');
   const filterLabel = document.createElement('label');
-  const filterCheckBox = document.createElement('input');
-  
+  const filterCheck = document.createElement('input');
+
+  // Add filter components to the DOM
   filterLabel.textContent = "Ocultar los que no hayan respondido";
-  filterCheckBox.type = 'checkbox';
-  div.appendChild(filterLabel);
-  div.appendChild(filterCheckBox);
-  mainDiv.insertBefore(div, ul);
-  filterCheckBox.addEventListener('change', (e) => {
-    const isChecked = e.target.checked;
-    const lis = ul.children;
-    if(isChecked) {
-      for (let i = 0; i < lis.length; i += 1) {
-        let li = lis[i];
-        if (li.className === 'responded') {
-          li.style.display = '';  
-        } else {
-          li.style.display = 'none';                        
-        }
-      }
-    } else {
-      for (let i = 0; i < lis.length; i += 1) {
-        let li = lis[i];
-        li.style.display = '';
-      }                                 
+  filterCheck.type = 'checkbox';
+  filter.appendChild(filterLabel);
+  filter.appendChild(filterCheck);
+  mainContent.insertBefore(filter, guestList);
+
+  // Hide guests on filter check
+  filterCheck.addEventListener('change', (e) => {
+    const hide = e.target.checked;
+    const guests = guestList.children;
+
+    for (let guest of guests) {
+      if (!hide)
+        guest.style.display = '';
+      else if (hide && guest.className !== 'responded')
+        guest.style.display = 'none';
     }
   });
-  
-  function createLI(text) {
-    function createElement(elementName, property, value) {
-      const element = document.createElement(elementName);  
-      element[property] = value; 
-      return element;
-    }
-    
-    function appendToLI(elementName, property, value) {
-      const element = createElement(elementName, property, value);     
-      li.appendChild(element); 
-      return element;
-    }
-    
-    const li = document.createElement('li');
-    appendToLI('span', 'textContent', text);     
-    appendToLI('label', 'textContent', 'Confirmed')
-      .appendChild(createElement('input', 'type', 'checkbox'));
-    appendToLI('button', 'textContent', 'edit');
-    appendToLI('button', 'textContent', 'remove');
-    return li;
-  }
-  
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const text = input.value;
-    input.value = '';
-    const li = createLI(text);
-    ul.appendChild(li);
+
+  // Add or remove 'responded' class to guests on checkbox click
+  guestList.addEventListener('change', (e) => {
+    const hasResponded = e.target.checked;
+    const guest = e.target.parentNode.parentNode;
+    const guestName = guest.getElementsByTagName('span')[0].innerText;
+
+    if (hasResponded) guest.className = 'responded';
+    else guest.className = '';
+
+    new XMLHttp().edit(new Guest(guest.id, guestName, hasResponded));
   });
-    
-  ul.addEventListener('change', (e) => {
-    const checkbox = event.target;
-    const checked = checkbox.checked;
-    const listItem = checkbox.parentNode.parentNode;
-    
-    if (checked) {
-      listItem.className = 'responded';
-    } else {
-      listItem.className = '';
-    }
-  });
-    
-  ul.addEventListener('click', (e) => {
+
+  // TODO refactor
+  // Button functionalities
+  guestList.addEventListener('click', (e) => {
     if (e.target.tagName === 'BUTTON') {
       const button = e.target;
-      const li = button.parentNode;
-      const ul = li.parentNode;
+      const guest = button.parentNode;
       const action = button.textContent;
       const nameActions = {
         remove: () => {
-          ul.removeChild(li);
+          new XMLHttp().remove(guest.id);
+          guestList.removeChild(guest);
         },
         edit: () => {
-          const span = li.firstElementChild;
+          const span = guest.firstElementChild;
           const input = document.createElement('input');
-          input.type = 'text';
+          input.type = 'name';
           input.value = span.textContent;
-          li.insertBefore(input, span);
-          li.removeChild(span);
-          button.textContent = 'save';  
+          guest.insertBefore(input, span);
+          guest.removeChild(span);
+          button.textContent = 'save';
         },
         save: () => {
-          const input = li.firstElementChild;
+          const input = guest.firstElementChild;
           const span = document.createElement('span');
           span.textContent = input.value;
-          li.insertBefore(span, input);
-          li.removeChild(input);
-          button.textContent = 'edit';        
+          guest.insertBefore(span, input);
+          guest.removeChild(input);
+          button.textContent = 'edit';
+          new XMLHttp().edit(new Guest(guest.id, input.value));
         }
       };
-      
-      // select and run action in button's name
+
       nameActions[action]();
     }
-  });  
-});  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+  });
+
+  guestForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const guestName = input.value;
+    if (guestName === "") return;
+
+    // Otra opción es crear un objeto Guest con un método insert
+    // dentro de él y que auto actualice su id al insertarse.
+    new XMLHttp().insert(new Guest(0, guestName, false));
+
+    const guest = createGuest(guestName);
+    const savedGuest = await new XMLHttp().search('nombre=' + guestName);
+    guestList.appendChild(guest);
+    guest.id = savedGuest[0].id;
+    input.value = '';
+  });
+
+  (async function () {
+    try {
+      let data = await new XMLHttp().search();
+      console.log(data)
+      paint(data);
+    }
+    catch (error) {
+      let errorWarning = document.createElement('h2');
+      errorWarning.innerText = error;
+      mainContent.appendChild(errorWarning);
+    }
+  })()
+}); // END DOMContentLoaded
+
+function createGuest(name) {
+  function createElement(elementName, property, value) {
+    const element = document.createElement(elementName);
+    element[property] = value;
+    return element;
+  }
+
+  function appendToLI(elementName, property, value) {
+    const element = createElement(elementName, property, value);
+    li.appendChild(element);
+    return element;
+  }
+
+  const li = document.createElement('li');
+  appendToLI('span', 'textContent', name);
+  appendToLI('label', 'textContent', 'Confirmed')
+    .appendChild(createElement('input', 'type', 'checkbox'));
+  appendToLI('button', 'textContent', 'edit');
+  appendToLI('button', 'textContent', 'remove');
+  return li;
+}
+
+function paint(data) {
+  data.forEach(invitado => {
+    const guest = createGuest(invitado.nombre);
+
+    guest.id = invitado.id;
+    if (invitado.confirmado) {
+      guest.querySelector("input[type='checkbox']").checked = true;
+      guest.className = 'responded';
+    }
+
+    guestList.appendChild(guest);
+  });
+}
